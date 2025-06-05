@@ -1,0 +1,500 @@
+---
+title: "Final-Project-2"
+output:
+  pdf_document: default
+date: "2024-12-05"
+---
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load necessary packages
+library(ggplot2)
+library(tidyverse)
+library(ggcorrplot)
+library(olsrr)
+library(readxl)
+library(gridExtra)
+library(tinytex)
+
+# Load data
+data <- read_excel("C:/Users/jknod/Desktop/STAT 461/Final Project/Dataset/Dataset461.xlsx")
+
+# Remove teamName, teamID and teamDivision
+data <- data[,-1:-2]
+```
+
+# Data Visualization
+
+## Scatterplots
+
+```{r}
+# Plot Independent Variables Against WinPercent
+
+# Goals/Game
+plot1 <- ggplot(data, aes(GoalsperGame, WinPercent)) + 
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Goals/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Goals Against/Game
+plot2 <- ggplot(data, aes(GoalsAgainstperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Goals Against/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Shots/Game
+plot3 <- ggplot(data, aes(ShotsperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Shots/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Shots Against/Game
+plot4 <- ggplot(data, aes(ShotsAgainstperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Shots Against/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Shooting Percentage
+plot5 <- ggplot(data, aes(ShootingPercent, WinPercent)) + 
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Shooting Percentage Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Assists/Game
+plot6 <- ggplot(data, aes(AssistsperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Assists/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Saves/Game
+plot7 <- ggplot(data, aes(SavesperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Saves/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# SavePercent
+plot8 <- ggplot(data, aes(SavePercent, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Save Percentage Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Demos/Game
+plot9 <- ggplot(data, aes(DemosperGame, WinPercent)) +
+  geom_point(aes(color = factor(Division))) + 
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Demos/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Demos Against/Game
+plot10 <- ggplot(data, aes(DemosAgainstperGame, WinPercent)) + 
+  geom_point(aes(color = factor(Division))) +   
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Demos Against/Game Vs. Win Percentage") +
+  theme(plot.title = element_text(size = 10))
+
+# Display all plots in a grid arrangement (2 rows and 2 columns)
+grid.arrange(plot1, plot2, plot3, plot4,
+             ncol = 2, nrow = 2)
+
+grid.arrange(plot5, plot6, plot7, plot8,
+             ncol = 2, nrow = 2)
+
+grid.arrange(plot9, plot10,
+             ncol = 1, nrow = 2)
+
+# Store all the plots in a list
+plot_list <- list(plot1, plot2, plot3, plot4, plot5, plot6, plot7, plot8, plot9, plot10)
+
+# Loop through the list to display each plot in its own window
+for (i in seq_along(plot_list)) {
+  print(plot_list[[i]])  # Print each plot
+}
+
+
+```
+
+
+```{r}
+
+# Get t-statistic, p-value, R-Square and adj. R-Square
+response_var <- "WinPercent"
+
+# Perform linear regressions and extract relevant statistics
+results <- lapply(setdiff(names(data), response_var), function(var) {
+  formula <- as.formula(paste(response_var, "~", var))
+  model <- lm(formula, data = data)
+  model_summary <- summary(model)
+  
+  # Extract t-statistic, p-value, R^2, and adjusted R^2
+  list(
+    t_statistic = round(coef(model_summary)[2, "t value"], 3),
+    p_value = round(coef(model_summary)[2, "Pr(>|t|)"], 3),
+    r_squared = round(model_summary$r.squared, 3),
+    adj_r_squared = round(model_summary$adj.r.squared, 3)
+  )
+})
+
+names(results) <- setdiff(names(data), response_var)
+
+# Display the extracted statistics
+for (var_name in names(results)) {
+  cat("=== Results for", var_name, "===\n")
+  cat("T-statistic:", results[[var_name]]$t_statistic, "\n")
+  cat("P-value:", results[[var_name]]$p_value, "\n")
+  cat("R-squared:", results[[var_name]]$r_squared, "\n")
+  cat("Adjusted R-squared:", results[[var_name]]$adj_r_squared, "\n\n")
+}
+
+```
+
+```{r}
+# Density Plots
+
+# List of variables to plot
+variables <- c(
+  "WinPercent", "GoalsperGame", "ShotsperGame", "ShootingPercent", 
+  "AssistsperGame", "SavesperGame", "GoalsAgainstperGame", 
+  "ShotsAgainstperGame", "SavePercent", "DemosperGame", "DemosAgainstperGame"
+)
+
+# Loop through variables to create density plots
+for (var in variables) {
+  p <- ggplot(data, aes_string(x = var)) +  # Use aes_string for variable names
+    geom_density(color = "blue", linewidth = 1) +  # Outline-only density plot
+    geom_vline(
+      aes(xintercept = mean(.data[[var]])), 
+      color = "black",  # Black mean line
+      linewidth = 1, 
+      linetype = "dashed"  # Dashed line for clarity
+    ) +
+    labs(
+      title = paste("Density Plot of", var),
+      x = var,
+      y = "Density"
+    ) +
+    theme_minimal() +  # Clean and modern theme
+    theme(
+      plot.title = element_text(hjust = 0.5, size = 14, face = "bold"),  # Center and style title
+      axis.title = element_text(size = 12),  # Increase axis title size
+      axis.text = element_text(size = 10)   # Adjust axis text size
+    )
+  
+  # Print each plot
+  print(p)
+}
+
+
+```
+
+## Summary Statistics
+
+```{r}
+
+# Display summary statistics for data
+cat("Win Percentage:\n")
+summary(data$WinPercent)
+
+cat("Goals/Game:\n")
+summary(data$GoalsperGame)
+
+cat("Goals Against/Game:\n")
+summary(data$GoalsAgainstperGame)
+
+cat("Shots/Game:\n")
+summary(data$ShotsperGame)
+
+cat("Shots Against/Game:\n")
+summary(data$ShotsAgainstperGame)
+
+cat("Shooting Percentage:\n")
+summary(data$ShootingPercent)
+
+cat("Assists/Game:\n")
+summary(data$AssistsperGame)
+
+cat("Saves/Game:\n")
+summary(data$SavesperGame)
+
+cat("Save Percentage:\n")
+summary(data$SavePercent)
+
+cat("Demos/Game:\n")
+summary(data$DemosperGame)
+
+cat("Demos Against/Game:\n")
+summary(data$DemosAgainstperGame)
+```
+
+```{r}
+# List of variable names for titles and labels
+par(mfrow = c(1,4))
+variable_names <- c("Win %", 
+                    "Goals/Game", 
+                    "Shots/Game", 
+                    "Shooting %", 
+                    "Assists/Game", 
+                    "Saves/Game", 
+                    "Goals Against/Game", 
+                    "Shots Against/Game", 
+                    "Save %", 
+                    "Demos/Game", 
+                    "Demos Against/Game")
+
+# Display the boxplots for the variables
+for (i in 1:length(variable_names)) {
+  boxplot(data[[i]],
+          main = paste("Boxplot of", variable_names[i]),
+          cex.main = 0.85,
+          col = "lightblue")
+}
+```
+
+# Addressing Multicollinearity
+
+```{r}
+# Correlation matrix excluding response variable
+corr <- round(cor(data %>% select(-WinPercent)), 2)
+
+# Create the correlation plot with ggplot
+ggcorrplot(corr, hc.order = TRUE, type = "lower", outline.col = "black",
+           lab = TRUE, lab_size = 2.75)
+```
+
+```{r}
+
+# Use Stepwise Selection Method to generate best model
+data <- data %>% select(-Division)
+# Full Model
+model.all <- lm(WinPercent ~ ., data = data)
+
+# Forwards Model
+model.forwards.olsrr <- ols_step_forward_p(model.all, trace = 0)
+print(model.forwards.olsrr)
+
+# Backwards Model
+model.backwards.olsrr <- ols_step_backward_p(model.all, trace = 0)
+print(model.backwards.olsrr)
+
+# Both Model
+model.both.olsrr <- ols_step_both_p(model.all, trace = 0)
+print(model.both.olsrr)
+
+# Best Possible Model
+model.best <- ols_step_best_subset(model.all, trace = 0)
+print(model.best)
+```
+
+```{r}
+
+# Generate residual plots
+model.final <- lm(WinPercent ~ GoalsAgainstperGame + GoalsperGame + SavesperGame + DemosperGame + AssistsperGame + ShotsAgainstperGame, data = data)
+
+# Residuals vs Fitted Values Plot
+ggplot(data = data.frame(
+  Fitted = model.final$fitted.values,
+  Residuals = model.final$residuals
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0, color = "blue", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+# Histogram of Residuals with Mean Line
+ggplot(data = data.frame(Residuals = model.final$residuals), aes(x = Residuals)) +
+  geom_histogram(aes(y = ..density..), bins = 7, fill = "lightblue", color = "black") +
+  geom_vline(aes(xintercept = mean(Residuals)), color = "red", linetype = "dashed", linewidth = 1.2) +
+  geom_vline(aes(xintercept = median(Residuals)), color = "green", linetype = "dashed", linewidth = 1.2) +
+  labs(
+    title = paste(
+      "Histogram of Residuals\nMean:", round(mean(model.final$residuals), 3),
+      "Median:", round(median(model.final$residuals), 3)
+    ),
+    x = "Residuals",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+
+# QQ Plot of Residuals
+ggplot(data = data.frame(Residuals = model.final$residuals), aes(sample = Residuals)) +
+  stat_qq(color = "black", size = 2) +
+  stat_qq_line(color = "red", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "QQ Plot of Residuals",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal()
+
+
+plot(density(model.final$residuals),
+     main = "Residuals Density Plot",
+     col = "blue", lwd = 2,
+     xlab = "Fitted Values",
+     ylab = "Residuals")
+abline(v = mean(model.final$residuals), col = "red", lwd = 2, lty = 2)
+```
+
+```{r, eval = FALSE}
+model.log <- lm(log(WinPercent + 1) ~ GoalsAgainstperGame + GoalsperGame + SavesperGame + DemosperGame + AssistsperGame + ShotsAgainstperGame, data = data)
+
+# Residuals vs Fitted Values Plot
+ggplot(data = data.frame(
+  Fitted = model.log$fitted.values,
+  Residuals = model.log$residuals
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0, color = "blue", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+# Histogram of Residuals with Mean Line
+ggplot(data = data.frame(Residuals = model.log$residuals), aes(x = Residuals)) +
+  geom_histogram(aes(y = ..density..), bins = 7, fill = "lightblue", color = "black") +
+  geom_vline(aes(xintercept = mean(Residuals)), color = "red", linetype = "dashed", linewidth = 1.2) +
+  geom_vline(aes(xintercept = median(Residuals)), color = "green", linetype = "dashed", linewidth = 1.2) +
+  labs(
+    title = paste(
+      "Histogram of Residuals\nMean:", round(mean(model.log$residuals), 3),
+      "Median:", round(median(model.log$residuals), 3)
+    ),
+    x = "Residuals",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+# QQ Plot of Residuals
+ggplot(data = data.frame(Residuals = model.log$residuals), aes(sample = Residuals)) +
+  stat_qq(color = "black", size = 2) +
+  stat_qq_line(color = "red", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "QQ Plot of Residuals",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal()
+
+plot(density(model.log$residuals),
+     main = "Residuals Density Plot",
+     col = "blue", lwd = 2,
+     xlab = "Fitted Values",
+     ylab = "Residuals")
+abline(v = mean(model.log$residuals), col = "red", lwd = 2, lty = 2)
+```
+
+```{r}
+print(anova(model.final))
+print(model.final)
+print(summary(model.final))
+```
+```{r}
+print(anova(model.all))
+print(model.all)
+print(summary(model.all))
+```
+```{r, eval = FALSE}
+# Residuals vs Fitted Values Plot
+ggplot(data = data.frame(
+  Fitted = model.all$fitted.values,
+  Residuals = model.all$residuals
+), aes(x = Fitted, y = Residuals)) +
+  geom_point(color = "black", size = 2) +
+  geom_hline(yintercept = 0, color = "blue", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "Residuals vs. Fitted Values",
+    x = "Fitted Values",
+    y = "Residuals"
+  ) +
+  theme_minimal()
+
+# Histogram of Residuals with Mean Line
+ggplot(data = data.frame(Residuals = model.all$residuals), aes(x = Residuals)) +
+  geom_histogram(aes(y = ..density..), bins = 7, fill = "lightblue", color = "black") +
+  geom_vline(aes(xintercept = mean(Residuals)), color = "red", linetype = "dashed", linewidth = 1.2) +
+  geom_vline(aes(xintercept = median(Residuals)), color = "green", linetype = "dashed", linewidth = 1.2) +
+  labs(
+    title = paste(
+      "Histogram of Residuals\nMean:", round(mean(model.all$residuals), 3),
+      "Median:", round(median(model.all$residuals), 3)
+    ),
+    x = "Residuals",
+    y = "Density"
+  ) +
+  theme_minimal()
+
+
+# QQ Plot of Residuals
+ggplot(data = data.frame(Residuals = model.all$residuals), aes(sample = Residuals)) +
+  stat_qq(color = "black", size = 2) +
+  stat_qq_line(color = "red", linetype = "solid", linewidth = 1.2) +
+  labs(
+    title = "QQ Plot of Residuals",
+    x = "Theoretical Quantiles",
+    y = "Sample Quantiles"
+  ) +
+  theme_minimal()
+
+
+plot(density(model.all$residuals),
+     main = "Residuals Density Plot",
+     col = "blue", lwd = 2,
+     xlab = "Fitted Values",
+     ylab = "Residuals")
+abline(v = mean(model.all$residuals), col = "red", lwd = 2, lty = 2)
+```
+```{r}
+# Create a model that can be used for inferences (Remove multicollinearity)
+data.infer <- data %>% select(-AssistsperGame)
+
+model.infer <- lm(WinPercent ~ GoalsAgainstperGame + GoalsperGame + SavesperGame + DemosperGame + ShotsAgainstperGame, data = data.infer)
+
+print(anova(model.infer))
+print(model.infer)
+print(summary(model.infer))
+
+options(width = 60)
+cat("Partial R-Square Values:\n")
+library(sensemakr)
+partial_r2(model.infer)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
