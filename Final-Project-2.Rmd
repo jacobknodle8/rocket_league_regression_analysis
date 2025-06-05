@@ -1,6 +1,8 @@
 ---
 title: "Final-Project-2"
 output:
+  html_document:
+    df_print: paged
   pdf_document: default
 date: "2024-12-05"
 ---
@@ -17,8 +19,14 @@ library(readxl)
 library(gridExtra)
 library(tinytex)
 
-# Load data
-data <- read_excel("C:/Users/jknod/Desktop/STAT 461/Final Project/Dataset/Dataset461.xlsx")
+# Load data using relative path
+data_path <- file.path("data", "Dataset_rocket_league.xlsx")
+
+if (!file.exists(data_path)) {
+  stop("Dataset file not found. Make sure you extracted the ZIP correctly and are running this from the main project folder.")
+}
+
+data <- read_excel(data_path)
 
 # Remove teamName, teamID and teamDivision
 data <- data[,-1:-2]
@@ -474,27 +482,3 @@ cat("Partial R-Square Values:\n")
 library(sensemakr)
 partial_r2(model.infer)
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
